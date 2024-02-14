@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-from Spider import Spider
+from spider import Spider
 
 if __name__ == "__main__":
     print("----------------- A R A C H N I D A -----------------")
     print("./spider.py --help for more information.")
     print("Remove SCHEME from URL to just open corresponding local files.")
     while True:
-        params = input("\nSpider input: ").split()
+        try:
+            params = input("\nSpider input: ")
+            params = params.split()
+        except EOFError:
+            print("Bye!")
+            break
 
         url = None
         recursive = False

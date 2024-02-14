@@ -11,10 +11,12 @@ It’s essentially data about data. It is frequently used to describe informatio
 ## Usage
 ```sh
 sudo apt update
-sudo apt install python3 python3-pip
+sudo apt install git python3 python3-pip
 pip3 install pyexiv2
+```
+```sh
 git clone git@github.com:Skalyaeve/arachnida.git
 cd arachnida/bonus
 chmod +x *.py
-echo "http://42.fr" | ./arachnida.py
+echo "http://42.fr" | ./main.py
 ```

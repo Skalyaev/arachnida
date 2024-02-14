@@ -14,12 +14,13 @@ from tkinter import Button as tkinter_Button
 from tkinter import Text as tkinter_Text
 from tkinter import DISABLED as tkinter_DISABLED
 from pyexiv2 import Image as pyexiv2_Image
-from pyexiv2 import metadata as pyexiv2_metadata
+import pyexiv2
 
 
 class Scorpion:
-    def __init__(self, img_path: str):
-        self.load_data(img_path)
+    def __init__(self, img_path: str = None):
+        if img_path:
+            self.load_data(img_path)
 
     def load_data(self, img_path: str):
         self.path = None
@@ -44,27 +45,30 @@ class Scorpion:
 
     def __load_metadata(self):
         try:
-            metadata = pyexiv2_Image(self.path)
+            img = pyexiv2_Image(self.path)
             try:
-                self.exif = metadata.read_exif()
+                self.exif = img.read_exif()
             except Exception as e:
                 print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_exif(): {e}")
 
             try:
-                self.iptc = metadata.read_iptc()
+                self.iptc = img.read_iptc()
             except Exception as e:
                 print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_iptc(): {e}")
 
             try:
-                self.xmp = metadata.read_xmp()
+                self.xmp = img.read_xmp()
             except Exception as e:
                 print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_xmp(): {e}")
 
-            metadata.close()
+            img.close()
         except Exception as e:
             print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): pyexiv2_Image({self.path}): {e}")
 
     def show_metadata(self, graphic: bool = False, parent=None):
+        if self.path is None:
+            print(f"Scorpion: [ ERROR ] show_metadata({graphic}, {parent}): No image loaded.")
+            return
         if graphic:
             return self.__load_gui(parent)
 
@@ -98,73 +102,135 @@ class Scorpion:
             print(f"Scorpion: [ ERROR ] modify_metadata({key}, {value}): pyexiv2_Image({self.path}): {e}")
 
     def __update_metadata(self, key: str, value: str):
-        metadata = pyexiv2_metadata.ImageMetadata(self.path)
-        metadata.read()
+        try:
+            img = pyexiv2_Image(self.path)
+        except Exception as e:
+            print(f"Scorpion: [ ERROR ] __update_metadata({key}, {value}): pyexiv2_Image({self.path}): {e}")
+            return False
+
+        metadata = { key: value }
+        datatype = key.split(".")[0]
         try:
             if not value:
-                del metadata[key]
-                metadata.write()
+                if datatype == "Exif":
+                    img.clear_exif()
+                    del self.exif[key]
+                    img.modify_exif(self.exif)
+                elif datatype == "Iptc":
+                    img.clear_iptc()
+                    del self.iptc[key]
+                    img.modify_iptc(self.iptc)
+                elif datatype == "Xmp":
+                    img.clear_xmp()
+                    del self.xmp[key]
+                    img.modify_xmp(self.xmp
+                    )
                 return True
 
             try:
                 metadata[key] = str(value)
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = [str(value)]
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = int(value)
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = [int(value)]
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = float(value)
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = [float(value)]
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = self.__str_to_bool(value)
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = [self.__str_to_bool(value)]
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except:
                 pass
 
             try:
                 metadata[key] = value
-                metadata.write()
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
                 return True
             except Exception as e:
                 raise e

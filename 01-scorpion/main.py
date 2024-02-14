@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 
-from Scorpion import Scorpion
+from scorpion import Scorpion
 
 c_red = "\033[91m"
 c_stop = "\033[0m"
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
         worker.load_data(img_path)
         if args.d:
-            worker.modify_metadata(args.d, None)
+            worker.modify_metadata(args.d, "")
         if args.m:
             worker.modify_metadata(key, value)
         worker.show_metadata()

@@ -14,7 +14,7 @@ from tkinter import Tk as tkinter_Tk
 from tkinter import Toplevel as tkinter_Toplevel
 from tkinter.ttk import Treeview as ttk_Treeview
 
-from Scorpion import Scorpion
+#from scorpion import Scorpion
 
 c_green = "\033[92m"
 c_red = "\033[91m"
