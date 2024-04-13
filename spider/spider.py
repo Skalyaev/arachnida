@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -B
 from os import makedirs as os_makedir
 from os import scandir as os_scandir
 from os.path import basename as os_path_basename

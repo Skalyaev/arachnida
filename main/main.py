@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -B
 from spider import Spider
 
 if __name__ == "__main__":

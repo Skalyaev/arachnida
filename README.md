@@ -1,22 +1,32 @@
-# Arachnida
+# <p align="center">arachnida</p>
+> *Projet d'introduction au web scraping et aux métadonnées.*
+>
+> *Dans un premier temps, vous allez créer un petit programme capable d'extraire automatiquement des images présentes sur internet. Ensuite, vous développerez un second programme pour analyser ces images et manipuler leurs métadonnées.*
+>
+> *Les métadonnées sont des informations dont le but est de décrire d'autres données. En résumé, ce sont des données sur des données. Elles sont fréquemment utilisées pour décrire le contenu d'images et de documents, et peuvent révéler des informations sensibles sur ceux qui les ont créés ou modifiés.*
 
-*Introductory project to web scraping and metadata.*
+## Install
+```bash
+sudo apt update -y
+sudo apt install -y python3
+sudo apt install -y python3-bs4
+sudo apt install -y python3-tk
+sudo apt install -y python3-pil
+sudo apt install -y python3-pil.imagetk
+sudo apt install -y python3-py3exiv2
+```
+```bash
+link=Skalyaeve/arachnida
+name=arachnida
 
-This project will allow you to process data from the web.
-First you will create a small program to automatically extract information from the web.
-Then you will create a second program to analyze these files and manipulate the metadata.
-Metadata is information which purpose is to describe other data.
-It’s essentially data about data. It is frequently used to describe information contained on images and documents, and can reveal sensitive information about those who have created or manipulated them.
+git clone https://github.com/$link.git $name
+cd $name/main
+```
 
 ## Usage
-```sh
-sudo apt update
-sudo apt install git python3 python3-pip
-pip3 install pyexiv2
+```bash
+./main.py
 ```
-```sh
-git clone git@github.com:Skalyaeve/arachnida.git
-cd arachnida/bonus
-chmod +x *.py
-echo "http://42.fr" | ./main.py
-```
+- Starting input with `http(s)://` will download images
+- Starting input without will open the corresponding folder from `./data`
+
