@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -B
+#!/usr/bin/env python3
 from os.path import basename as os_path_basename
 from PIL import Image as PIL_Image
 from PIL.ImageSequence import Iterator as PIL_ImageSequence_Iterator
@@ -13,6 +13,7 @@ from tkinter import Entry as tkinter_Entry
 from tkinter import Button as tkinter_Button
 from tkinter import Text as tkinter_Text
 from tkinter import DISABLED as tkinter_DISABLED
+from pyexiv2 import Image as pyexiv2_Image
 import pyexiv2
 
 
@@ -26,7 +27,9 @@ class Scorpion:
         self.width = None
         self.height = None
         self.format = None
-        self.metadata = {}
+        self.exif = {}
+        self.iptc = {}
+        self.xmp = {}
 
         try:
             img = PIL_Image.open(img_path)
@@ -42,10 +45,25 @@ class Scorpion:
 
     def __load_metadata(self):
         try:
-            self.metadata = pyexiv2.ImageMetadata(self.path)
-            self.metadata.read()
+            img = pyexiv2_Image(self.path)
+            try:
+                self.exif = img.read_exif()
+            except Exception as e:
+                print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_exif(): {e}")
+
+            try:
+                self.iptc = img.read_iptc()
+            except Exception as e:
+                print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_iptc(): {e}")
+
+            try:
+                self.xmp = img.read_xmp()
+            except Exception as e:
+                print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): metadata.read_xmp(): {e}")
+
+            img.close()
         except Exception as e:
-            print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): ImageMetadata({self.path}): {e}")
+            print(f"Scorpion: [ ERROR ] __load_metadata({self.path}): pyexiv2_Image({self.path}): {e}")
 
     def show_metadata(self, graphic: bool = False, parent=None):
         if self.path is None:
@@ -59,59 +77,166 @@ class Scorpion:
         print(f"Width: {self.width}")
         print(f"Height: {self.height}")
 
-        if len(self.metadata.exif_keys):
+        if len(self.exif):
             print("--------- E X I F ---------")
-            for key in self.metadata.exif_keys:
-                print(f"{key}: {self.metadata[key].value}")
+            for x, y in self.exif.items():
+                print(f"{x}: {y}")
 
-        if len(self.metadata.iptc_keys):
+        if len(self.iptc):
             print("--------- I P T C ---------")
-            for key in self.metadata.iptc_keys:
-                print(f"{key}: {self.metadata[key].value}")
+            for x, y in self.iptc.items():
+                print(f"{x}: {y}")
 
-        if len(self.metadata.xmp_keys):
+        if len(self.xmp):
             print("---------- X M P ----------")
-            for key in self.metadata.xmp_keys:
-                print(f"{key}: {self.metadata[key].value}")
+            for x, y in self.xmp.items():
+                print(f"{x}: {y}")
         print("-----------------------------------------------------")
 
     def modify_metadata(self, key: str, value: str | None):
         try:
-            if value:
-                self.__update_metadata(key, value)
-            else:
-                self.__remove_metadata(key)
+            if not self.__update_metadata(key, value):
+                return
             self.__load_metadata()
         except Exception as e:
-            print(f"Scorpion: [ ERROR ] modify_metadata({key}, {value}): can not modify metadata({self.path}): {e}")
+            print(f"Scorpion: [ ERROR ] modify_metadata({key}, {value}): pyexiv2_Image({self.path}): {e}")
 
     def __update_metadata(self, key: str, value: str):
-        if key in self.metadata.exif_keys:
-            self.metadata[key].value = value
-            self.metadata.write()
-        elif key in self.metadata.iptc_keys:
-            self.metadata[key].value = value
-            self.metadata.write()
-        elif key in self.metadata.xmp_keys:
-            self.metadata[key].value = value
-            self.metadata.write()
-        else:
+        try:
+            img = pyexiv2_Image(self.path)
+        except Exception as e:
+            print(f"Scorpion: [ ERROR ] __update_metadata({key}, {value}): pyexiv2_Image({self.path}): {e}")
+            return False
+
+        metadata = { key: value }
+        datatype = key.split(".")[0]
+        try:
+            if not value:
+                if datatype == "Exif":
+                    img.clear_exif()
+                    del self.exif[key]
+                    img.modify_exif(self.exif)
+                elif datatype == "Iptc":
+                    img.clear_iptc()
+                    del self.iptc[key]
+                    img.modify_iptc(self.iptc)
+                elif datatype == "Xmp":
+                    img.clear_xmp()
+                    del self.xmp[key]
+                    img.modify_xmp(self.xmp
+                    )
+                return True
+
             try:
-                self.metadata[key] = pyexiv2.ExifTag(key, value)
-                self.metadata.write()
+                metadata[key] = str(value)
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
             except:
                 pass
 
-    def __remove_metadata(self, key: str):
-        if key in self.metadata.exif_keys:
-            del self.metadata[key]
-            self.metadata.write()
-        elif key in self.metadata.iptc_keys:
-            del self.metadata[key]
-            self.metadata.write()
-        elif key in self.metadata.xmp_keys:
-            del self.metadata[key]
-            self.metadata.write()
+            try:
+                metadata[key] = [str(value)]
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = int(value)
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = [int(value)]
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = float(value)
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = [float(value)]
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = self.__str_to_bool(value)
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = [self.__str_to_bool(value)]
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except:
+                pass
+
+            try:
+                metadata[key] = value
+                if datatype == "Exif":
+                    img.modify_exif(metadata)
+                elif datatype == "Iptc":
+                    img.modify_iptc(metadata)
+                elif datatype == "Xmp":
+                    img.modify_xmp(metadata)
+                return True
+            except Exception as e:
+                raise e
+        except Exception as e:
+            print(f"Scorpion: [ ERROR ] __update_metadata({key}, {value}): Can't update metadata: {e}")
+            return False
 
     def __str_to_bool(self, value: str):
         value = value.lower()
@@ -120,7 +245,7 @@ class Scorpion:
         return value == "true"
 
     def data_exists(self, key: str):
-        for metadata in [self.metadata.exif_keys, self.metadata.iptc_keys, self.metadata.xmp_keys]:
+        for metadata in [self.exif, self.iptc, self.xmp]:
             if key in metadata:
                 return True
         return False
@@ -190,32 +315,23 @@ class Scorpion:
         height_label = tkinter_Label(content_frame, text=f"Height: {self.height}")
         height_label.pack(anchor="w")
 
-        if len(self.metadata.exif_keys):
+        if len(self.exif):
             exif_label = tkinter_Label(content_frame, text=f"[ E X I F ]")
             exif_label.pack(anchor="w", pady=(5, 0))
-            for key in self.metadata.exif_keys:
-                try:
-                    self.__pack_info(content_frame, key, self.metadata[key].value)
-                except:
-                    pass
+            for x, y in self.exif.items():
+                self.__pack_info(content_frame, x, y)
 
-        if len(self.metadata.iptc_keys):
+        if len(self.iptc):
             iptc_label = tkinter_Label(content_frame, text=f"[ I P T C ]")
             iptc_label.pack(anchor="w", pady=(5, 0))
-            for key in self.metadata.iptc_keys:
-                try:
-                    self.__pack_info(content_frame, key, self.metadata[key].value)
-                except:
-                    pass
+            for x, y in self.iptc.items():
+                self.__pack_info(content_frame, x, y)
 
-        if len(self.metadata.xmp_keys):
+        if len(self.xmp):
             xmp_label = tkinter_Label(content_frame, text=f"[ X M P ]")
             xmp_label.pack(anchor="w", pady=(5, 0))
-            for key in self.metadata.xmp_keys:
-                try:
-                    self.__pack_info(content_frame, key, self.metadata[key].value)
-                except:
-                    pass
+            for x, y in self.xmp.items():
+                self.__pack_info(content_frame, x, y)
 
         modify_button = tkinter_Button(content_frame, text="S A V E", command=self.__update_list, width=10)
         modify_button.pack(padx=(145, 0), pady=(5, 0), anchor="w")
@@ -275,11 +391,11 @@ class Scorpion:
             value = value.get()
             if not value:
                 self.modify_metadata(key, None)
-            elif key in self.metadata.exif_keys:
+            elif key in self.exif and value != str(self.exif[key]):
                 self.modify_metadata(key, value)
-            elif key in self.metadata.iptc_keys:
+            elif key in self.iptc and value != str(self.iptc[key]):
                 self.modify_metadata(key, value)
-            elif key in self.metadata.xmp_keys:
+            elif key in self.xmp and value != str(self.xmp[key]):
                 self.modify_metadata(key, value)
         self.gui["img_infos"].clear()
         self.__refresh_infos()

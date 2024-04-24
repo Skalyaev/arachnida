@@ -7,20 +7,15 @@
 
 ## Install
 ```bash
-sudo apt update -y
-sudo apt install -y python3
-sudo apt install -y python3-bs4
-sudo apt install -y python3-tk
-sudo apt install -y python3-pil
-sudo apt install -y python3-pil.imagetk
-sudo apt install -y python3-py3exiv2
+pip install requests
+pip install bs4
+pip install pillow
+pip install pyexiv2
+pip install tk
 ```
 ```bash
-link=Skalyaeve/arachnida
-name=arachnida
-
-git clone https://github.com/$link.git $name
-cd $name/main
+git clone https://github.com/Skalyaeve/arachnida.git
+cd arachnida/main
 ```
 
 ## Usage
