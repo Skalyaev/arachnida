@@ -24,3 +24,4 @@ cd arachnida/main
 ```
 - Starting input with `http(s)://` will download images
 - Starting input without will open the corresponding folder from `./data`
+
